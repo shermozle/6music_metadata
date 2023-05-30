@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import requests, json, re, time, urllib, os
+import requests, json, re, time, urllib, os, datetime
 
 host = os.getenv('HOST', '')
 port = os.getenv('PORT', '')
@@ -13,11 +13,11 @@ while True:
     try:
         clients = requests.get('http://' + user + ':' + password + '@' + host + ':' + port + '/admin/listclients?mount=' + mount)
     except Exception as e:
-        print("Error connecting to icecast: " + str(e))
+        print(str(datetime.datetime.now()) + " Error connecting to icecast: " + str(e))
     pattern = re.compile("<Listeners>0</Listeners>")
     searchResult = pattern.search(clients.text)
     if searchResult == None:
-        print("We have a listener")
+        print(str(datetime.datetime.now()) + " We have a listener")
         getUrl = 'https://rms.api.bbc.co.uk/v2/services/bbc_6music/segments/latest'
         try:
             response = requests.get(getUrl)
@@ -26,7 +26,7 @@ while True:
         try:
             data = json.loads(response.text)
             metadata = data['data'][0]['titles']['primary'] + ' - ' + data['data'][0]['titles']['secondary']
-            print(metadata)
+            print(str(datetime.datetime.now()) + ' ' + metadata)
         except Exception as e:
             print("Error:" + str(e))
             print(json.dumps(data))
@@ -34,7 +34,7 @@ while True:
             requests.get('http://' + user + ':' + password + '@' + host + ':' + port + '/admin/metadata.xsl?song=' + str(urllib.parse.quote(metadata)) + '&mount=' + urllib.parse.quote(mount) + '&mode=updinfo&charset=UTF-8')
             
         except Exception as e:
-            print("Well that didn't work eh: " + str(e))
+            print(str(datetime.datetime.now()) + " Well that didn't work eh: " + str(e))
     else:
-        print("Nobody listening")
+        print(str(datetime.datetime.now()) + " Nobody listening")
     time.sleep(sleep_timer)
